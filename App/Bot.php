@@ -43,7 +43,6 @@ class Bot
         $response = $this->client->get('gamestates/' . $channel);
 
         if($response->getStatusCode() != 200) {
-            printf("Error");
             return false;
         }
 
