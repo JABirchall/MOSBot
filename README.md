@@ -9,5 +9,5 @@ Find a stream with the Marbles on stream Twitch Extension. Open dev tools > netw
 Once you capture the request copy the streamer ID and your Authorization header for that stream and put them in the `config.json`
 Then just run `php start.php`
 
-
+![https://i.imgur.com/rUA8u03.png](https://i.imgur.com/rUA8u03.png)
 
