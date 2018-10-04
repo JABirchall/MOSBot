@@ -50,7 +50,7 @@ class Bot
         $body = json_decode($response->getBody(), false);
 
         if($body->joinable !== true) {
-            printf("Not joinable\n");
+            printf("Not joinable - Reason: %s\n", $body->matchState);
             return $body->joinable;
         }
         printf("Joinable\n");
@@ -88,7 +88,8 @@ class Bot
         {
             if($i == count($this->channels)){
                 $i = 0;
-                sleep(5);
+                printf("[INFO] Bot looped over %d channels pausing for 30 seconds\n", count($this->channels));
+                sleep(30);
             }
 
             try {
@@ -97,10 +98,18 @@ class Bot
                 }
                 $this->joinRace($this->channels[$i]);
             } catch(RequestException $e) {
-                if($e->getCode() === 401) {
-                    exit("Unauthorized, Change your token.");
+                switch ($e->getCode()) {
+                    case 401:
+                        exit("Unauthorized, Change your token.");
+                    case 404:
+                        printf("[WARNING] Channel does not have the game running\n");
+                        break;
+                    case 500:
+                        printf("[ERROR] PixelByPixel API encounted an error - Possibly updated\n");
+                        break;
+                    default:
+                        printf("[ERROR] Status code not OK - Code: %d\n", $e->getCode());
                 }
-                printf("[ERROR] Status code not OK - Code: %d\n", $e->getCode());
             }
         }
     }
