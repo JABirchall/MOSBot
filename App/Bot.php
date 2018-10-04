@@ -87,7 +87,7 @@ class Bot
         {
             if($i == count($this->channels)){
                 $i = 0;
-                printf("[INFO] Bot looped over %d channels pausing for 30 seconds\n", count($this->channels));
+                printf("%'-30s\n[INFO] Bot looped over %d channels pausing for 30 seconds\n%'-30s\n",'-', count($this->channels),'-');
                 sleep(30);
             }
 
