@@ -11,12 +11,12 @@ class Bot
 
     private $user;
 
-    private $channels;
+    private $config;
 
     public function __construct()
     {
-        $config = json_decode(file_get_contents("config.json"), false);
-        $headers = ['Authorization' => $config->authorization,
+        $this->config = json_decode(file_get_contents("config.json"), false);
+        $headers = ['Authorization' => $this->config->authorization,
                     "Referer" => "https://sywoia81cjcorq88587bbrdn2t87sq.ext-twitch.tv/sywoia81cjcorq88587bbrdn2t87sq/0.0.4/cb4f1507e5df6025486f4c38910bf2d8/viewer.html?anchor=component&language=en&mode=viewer&state=released&platform=web",
                     "Origin" => "https://sywoia81cjcorq88587bbrdn2t87sq.ext-twitch.tv",
                     "User-Agent" => "MOSBot v1.0 PHP/".phpversion(),
@@ -29,11 +29,7 @@ class Bot
         ]);
 
         $this->user = new User;
-        $this->user->username = $config->username;
-        $this->user->displayname = $config->displayname;
         $this->user->subscriber = false;
-
-        $this->channels = $config->channels;
     }
 
 
@@ -60,30 +56,42 @@ class Bot
     {
         printf("[INFO] Attempting to join race: %d with skin %d\n", $channel, $this->user->skin);
 
-        $response = $this->client->post('gamestates/join/' . $channel, ['json' => [
-            'username' => $this->user->username,
-            'displayname' => $this->user->displayname,
-            'skin' => "?",
-            'subscriber' => $this->user->subscriber,
-            'emote' => 0
-        ]]);
+        for ($i = 0; $i <= $this->config->usernames->limit; $i++) {
+            $username = $this->getUsername($i);
 
-        if($response->getStatusCode() != 200) {
-            printf("[ERROR] Status code not OK - Code: %d\n", $response->getStatusCode());
-            return false;
+            printf("Joining with username %s\n", $username);
+            $this->client->post('gamestates/join/' . $channel, [
+                'json' => [
+                    'username' => strtolower($username),
+                    'displayname' => $username,
+                    'skin' => $this->user->skin,
+                    'subscriber' => $this->user->subscriber,
+                    'emote' => 0
+                ]
+            ]);
         }
+
 
         return true;
     }
 
+    private function getUsername($i)
+    {
+        if($this->config->usernames->random){
+            return uniqid();
+        }
+
+        return ($this->config->usernames->list[$i] . ($i == 0 ? '' : sprintf("%'03s",$i)));
+    }
+
     public function loop()
     {
-        printf("[INFO] Bot starting loop over %d channels\n", count($this->channels));
-        for($i = 0; $i <= count($this->channels); $i++)
+        printf("[INFO] Bot starting loop over %d channels\n", count($this->config->channels));
+        for($i = 0; $i <= count($this->config->channels); $i++)
         {
-            if($i == count($this->channels)){
+            if($i == count($this->config->channels)){
                 $i = 0;
-                printf("%'-30s\n[INFO] Bot looped over %d channels pausing for 30 seconds\n%'-30s\n",'-', count($this->channels),'-');
+                printf("%'-30s\n[INFO] Bot looped over %d channels pausing for 30 seconds\n%'-30s\n",'-', count($this->config->channels),'-');
                 sleep(30);
             }
 
@@ -91,7 +99,7 @@ class Bot
                 if ($this->getGameStatus($this->channels[$i]) !== true) {
                     continue;
                 }
-                $this->joinRace($this->channels[$i]);
+                $this->joinRace($this->config->channels[$i]);
             } catch(RequestException $e) {
                 switch ($e->getCode()) {
                     case 401:
