@@ -19,13 +19,13 @@ class Bot
         $headers = ['Authorization' => $config->authorization,
                     "Referer" => "https://sywoia81cjcorq88587bbrdn2t87sq.ext-twitch.tv/sywoia81cjcorq88587bbrdn2t87sq/0.0.4/cb4f1507e5df6025486f4c38910bf2d8/viewer.html?anchor=component&language=en&mode=viewer&state=released&platform=web",
                     "Origin" => "https://sywoia81cjcorq88587bbrdn2t87sq.ext-twitch.tv",
-                    "User-Agent" => "MOSBot v1.0 curl/". phpversion("curl") ." PHP/".phpversion()
+                    "User-Agent" => "MOSBot v1.0 PHP/".phpversion(),
         ];
         $this->client = new Client([
             'base_uri' => 'https://www.pbpmosext.pixelbypixelcanada.com/',
             'timeout'  => 1.0,
             'headers'  => $headers,
-            'verify' => false
+            'verify' => false,
         ]);
 
         $this->user = new User;
@@ -41,10 +41,6 @@ class Bot
     {
         printf("[INFO] Fetching game status for: %d - ", $channel);
         $response = $this->client->get('gamestates/' . $channel);
-
-        if($response->getStatusCode() != 200) {
-            return false;
-        }
 
         $body = json_decode($response->getBody(), false);
 
@@ -99,9 +95,9 @@ class Bot
             } catch(RequestException $e) {
                 switch ($e->getCode()) {
                     case 401:
-                        exit("Unauthorized, Change your token.");
+                        exit($e->getMessage()."\nUnauthorized, Change your token.");
                     case 404:
-                        printf("[WARNING] Channel does not have the game running\n");
+                        printf("Not Joinable - Reason: NotRunning\n");
                         break;
                     case 500:
                         printf("[ERROR] PixelByPixel API encounted an error - Possibly updated\n");
