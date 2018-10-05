@@ -57,13 +57,13 @@ class Bot
         printf("[INFO] Attempting to join race: %d with skin %d\n", $channel, $this->user->skin);
 
         for ($i = 0; $i <= $this->config->usernames->limit; $i++) {
-            $username = $this->getUsername($i);
+            $this->getUsername($i);
 
-            printf("Joining with username %s\n", $username);
+            printf("Joining with username %s\n", $this->user->username);
             $this->client->post('gamestates/join/' . $channel, [
                 'json' => [
-                    'username' => strtolower($username),
-                    'displayname' => $username,
+                    'username' => $this->user->username,
+                    'displayname' => $this->user->displayname,
                     'skin' => $this->user->skin,
                     'subscriber' => $this->user->subscriber,
                     'emote' => 0
@@ -78,10 +78,14 @@ class Bot
     private function getUsername($i)
     {
         if($this->config->usernames->random){
-            return uniqid();
+            $this->user->displayname = uniqid();
+            $this->user->username = strtolower($this->user->displayname);
+            return;
         }
 
-        return ($this->config->usernames->list[$i] . ($i == 0 ? '' : sprintf("%'03s",$i)));
+        $this->user->displayname = ($this->config->usernames->list[$i] . ($i == 0 ? '' : sprintf("%'03s",$i)));
+        $this->user->username = strtolower($this->user->displayname);
+        return;
     }
 
     public function loop()
@@ -96,7 +100,7 @@ class Bot
             }
 
             try {
-                if ($this->getGameStatus($this->channels[$i]) !== true) {
+                if ($this->getGameStatus($this->config->channels[$i]) !== true) {
                     continue;
                 }
                 $this->joinRace($this->config->channels[$i]);
