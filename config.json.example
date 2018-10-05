@@ -4,7 +4,15 @@
   "authorization": "",
   "subscriber": false,
   "channels": [
-    "39513373",
     "97982079"
-  ]
+  ],
+  "usernames": {
+      "random": false,
+      "limit": 500,
+      "list": [
+        "PixelByPixelStudios",
+        "FuckSpooo",
+        "SpoooSucksDonkeyBalls"
+      ]
+    }
 }
